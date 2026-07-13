@@ -1,0 +1,190 @@
+# ShiTTY FETCH & busybox and POSIX compliant
+# this file is licensed under the LGPLv2.
+# this file was not made by any AI
+
+# i dont know why, but i think a simple fetch shouldn't be so
+# over complicated.
+
+# thanks to:
+# dylanaraps for the pure-sh-bible
+# fastfetch for the logos
+
+# table initialization
+# --------------------
+distro=$(grep PRETTY_NAME /etc/os-release)
+	# remove from left(##) 		  ; remove from right(%%)
+    distro=${distro##"PRETTY_NAME='"} ; distro=${distro%%\'}
+host=$(cat /sys/devices/virtual/dmi/id/product_name)
+kernel=$(uname -r)
+uptime=$(uptime)
+    uptime=${uptime%%","*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | tr ":" "h")
+# pkgs (sorry this is the most extense part)
+    case "$distro" in
+       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)"
+    esac
+shell=$SHELL
+disp=${WAYLAND_DISPLAY%%-0}
+    # Check if its xorg
+    if [ -z $disp ] && [ $DISPLAY = ":0" ]; then disp="xorg" ; fi ;
+term=$TERM
+cpu=$(uname -p)
+gpu=$(lspci)				     # delete  kB	     delete spaces and name
+tram=$(grep MemTotal: /proc/meminfo) ; tram=${tram%\ *} ; tram=${tram##"MemTotal:"*\ }
+fram=$(grep MemAvailable:  /proc/meminfo) ; fram=${fram%\ *} ; fram=${fram##"MemAvailable:"*\ }
+    tram=$(echo "scale=2 ;$tram/1024/1024" | bc -s)
+    fram=$(echo "scale=2 ;$fram/1024/1024" | bc -s)     ; uram=$(echo "scale=2 ;$tram-$fram"     | bc -s)
+    ram="$uram/$tram GiB"
+    unset tram fram uram
+battery="$(cat /sys/class/power_supply/BAT0/capacity)%%"
+locale=$(locale | grep LANG)
+    locale=${locale##"LANG="}
+# --------------------
+
+embtoilet() {
+    if [ $# -gt 0 ]; then
+       distro=$1
+    else
+        read distro
+    fi
+    printf "\n\n\n"
+    printf "\033[3A"
+    while [ ${#distro} -ne 0 ] ; do
+    # get the first character
+    i=$(printf "%.1s" "$distro")
+    #delete the char
+    distro=${distro#${i}}
+    # lowercase
+    case $(printf "$i" | tr 'A-Z' 'a-z') in
+a)char='
+░█▀█
+░█▀█
+░▀░▀';;
+b)char='
+░█▀▄
+░█▀▄
+░▀▀░';;
+c)char='
+░█▀▀
+░█░░
+░▀▀▀';;
+d)char='
+░█▀▄
+░█░█
+░▀▀░';;
+e)char='
+░█▀▀
+░█▀▀
+░▀▀▀';;
+f)char='
+░█▀▀
+░█▀▀
+░▀░░';;
+g)char='
+░█▀▀
+░█░█
+░▀▀▀';;
+h)char='
+░█░█
+░█▀█
+░▀░▀';;
+i)char='
+░▀█▀
+░░█░
+░▀▀▀';;
+j)char='
+░▀▀█
+░░░█
+░▀▀░';;
+k)char='
+░█░█
+░█▀▄
+░▀░▀';;
+l)char='
+░█░░
+░█░░
+░▀▀▀';;
+m)char='
+░█▄█
+░█░█
+░▀░▀';;
+n)char='
+░█▀█
+░█░█
+░▀░▀';;
+o)char='
+░█▀█
+░█░█
+░▀▀▀';;
+p)char='
+░█▀█
+░█▀▀
+░▀░░';;
+q)char='
+░▄▀▄
+░█\█
+░░▀\';;
+r)char='
+░█▀▄
+░█▀▄
+░▀░▀';;
+s)char='
+░█▀▀
+░▀▀█
+░▀▀▀';;
+t)char='
+░▀█▀
+░░█░
+░░▀░';;
+u)char='
+░█░█
+░█░█
+░▀▀▀';;
+v)char='
+░█░█
+░▀▄▀
+░░▀░';;
+w)char='
+░█░█
+░█▄█
+░▀░▀';;
+x)char='
+░█░█
+░▄▀▄
+░▀░▀';;
+y)char='
+░█░█
+░░█░
+░░▀░';;
+z)char='
+░▀▀█
+░▄▀░
+░▀▀▀';;
+*)char='
+░░░░
+░░░░
+░░░░';;
+        esac
+        for line in $char; do
+            printf $line
+            printf "\033[1B\033[4D"
+        done
+        printf "\033[3A\033[4C"
+    done
+    printf "\033[2B\r"
+}
+
+printf "$(embtoilet "$distro")
+host:		$host
+kernel:		$kernel
+uptime:		$uptime
+pkgs:		$pkgs
+shell:		$shell
+disp:		$disp
+term:		$term
+cpu:		$cpu
+ram:		$ram
+battery:	$battery
+locale:		$locale
+"
+
+
