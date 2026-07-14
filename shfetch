@@ -22,10 +22,13 @@ uptime=$(uptime)
     uptime=${uptime%%","*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | tr ":" "h")
 # pkgs and colors
     case "$distro" in
-       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ;;
+       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ;;
        # `apk stats` and `apk info` are so freaking slow. find, eventually, an alternative.
-       *Alpine*) pkgs="$(apk info | wc -l) (apk)" ;;
+       *Alpine*) pkgs="$(apk info | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ;;
     esac
+clr="\033[0m"
+clogo="\033[10;36m"
+
 shell=$SHELL
 disp=${WAYLAND_DISPLAY%%-*}
     # Check if its xorg
@@ -36,8 +39,8 @@ cpu=$(uname -p)
 tram=$(grep MemTotal: /proc/meminfo) ; tram=${tram%\ *} ; tram=${tram##"MemTotal:"*\ }
 fram=$(grep MemAvailable:  /proc/meminfo) ; fram=${fram%\ *} ; fram=${fram##"MemAvailable:"*\ }
     tram=$(echo "scale=2 ;$tram/1024/1024" | bc -s)
-    fram=$(echo "scale=2 ;$fram/1024/1024" | bc -s)     ; uram=$(echo "scale=2 ;$tram-$fram"     | bc -s)
-    ram="$uram/$tram GiB"
+    fram=$(echo "scale=2 ;$fram/1024/1024" | bc -s)     ; uram=$(echo "scale=2 ;$tram-$fram" | bc -s)
+    ram="$uram/${tram}GiB"
     unset tram fram uram
 
 [ -d "/sys/class/power_supply/BAT0" ] && battery="$(cat /sys/class/power_supply/BAT0/capacity)%% [$(cat /sys/class/power_supply/BAT0/status)]"
@@ -49,166 +52,166 @@ embtoilet() {
 distro=$1 ; distro=$(printf "$distro" | tr 'A-Z' 'a-z') ; printf "\n\n\n" ; printf "\033[3A"
 while [ ${#distro} -ne 0 ] ; do i=$(printf "%.1s" "$distro" ) ; distro=${distro#${i}}
 case $i in
-a)char='
+a)char="
 ░█▀█
 ░█▀█
-░▀░▀';;
-b)char='
+░▀░▀";;
+b)char="
 ░█▀▄
 ░█▀▄
-░▀▀░';;
-c)char='
+░▀▀░";;
+c)char="
 ░█▀▀
 ░█░░
-░▀▀▀';;
-d)char='
+░▀▀▀";;
+d)char="
 ░█▀▄
 ░█░█
-░▀▀░';;
-e)char='
+░▀▀░";;
+e)char="
 ░█▀▀
 ░█▀▀
-░▀▀▀';;
-f)char='
+░▀▀▀";;
+f)char="
 ░█▀▀
 ░█▀▀
-░▀░░';;
-g)char='
+░▀░░";;
+g)char="
 ░█▀▀
 ░█░█
-░▀▀▀';;
-h)char='
+░▀▀▀";;
+h)char="
 ░█░█
 ░█▀█
-░▀░▀';;
-i)char='
+░▀░▀";;
+i)char="
 ░▀█▀
 ░░█░
-░▀▀▀';;
-j)char='
+░▀▀▀";;
+j)char="
 ░▀▀█
 ░░░█
-░▀▀░';;
-k)char='
+░▀▀░";;
+k)char="
 ░█░█
 ░█▀▄
-░▀░▀';;
-l)char='
+░▀░▀";;
+l)char="
 ░█░░
 ░█░░
-░▀▀▀';;
-m)char='
+░▀▀▀";;
+m)char="
 ░█▄█
 ░█░█
-░▀░▀';;
-n)char='
+░▀░▀";;
+n)char="
 ░█▀█
 ░█░█
-░▀░▀';;
-o)char='
+░▀░▀";;
+o)char="
 ░█▀█
 ░█░█
-░▀▀▀';;
-p)char='
+░▀▀▀";;
+p)char="
 ░█▀█
 ░█▀▀
-░▀░░';;
-q)char='
+░▀░░";;
+q)char="
 ░▄▀▄
-░█\█
-░░▀\';;
-r)char='
+░█\\█
+░░▀\\";;
+r)char="
 ░█▀▄
 ░█▀▄
-░▀░▀';;
-s)char='
+░▀░▀";;
+s)char="
 ░█▀▀
 ░▀▀█
-░▀▀▀';;
-t)char='
+░▀▀▀";;
+t)char="
 ░▀█▀
 ░░█░
-░░▀░';;
-u)char='
+░░▀░";;
+u)char="
 ░█░█
 ░█░█
-░▀▀▀';;
-v)char='
+░▀▀▀";;
+v)char="
 ░█░█
 ░▀▄▀
-░░▀░';;
-w)char='
+░░▀░";;
+w)char="
 ░█░█
 ░█▄█
-░▀░▀';;
-x)char='
+░▀░▀";;
+x)char="
 ░█░█
 ░▄▀▄
-░▀░▀';;
-y)char='
+░▀░▀";;
+y)char="
 ░█░█
 ░░█░
-░░▀░';;
-z)char='
+░░▀░";;
+z)char="
 ░▀▀█
 ░▄▀░
-░▀▀▀';;
-1)char='
+░▀▀▀";;
+1)char="
 ░▀█░
 ░░█░
-░▀▀▀';;
-2)char='
+░▀▀▀";;
+2)char="
 ░▀▀▄
 ░▄▀░
-░▀▀▀';;
-3)char='
+░▀▀▀";;
+3)char="
 ░▀▀█
 ░░▀▄
-░▀▀░';;
-4)char='
+░▀▀░";;
+4)char="
 ░█░█
 ░░▀█
-░░░▀';;
-5)char='
+░░░▀";;
+5)char="
 ░█▀▀
 ░▀▀▄
-░▀▀░';;
-6)char='
+░▀▀░";;
+6)char="
 ░▄▀▀
 ░█▀▄
-░░▀░';;
-7)char='
+░░▀░";;
+7)char="
 ░▀▀█
 ░▄▀░
-░▀░░';;
-8)char='
+░▀░░";;
+8)char="
 ░▄▀▄
 ░▄▀▄
-░░▀░';;
-9)char='
+░░▀░";;
+9)char="
 ░▄▀▄
 ░░▀█
-░▀▀░';;
-0)char='
+░▀▀░";;
+0)char="
 ░▄▀▄
 ░█/█
-░░▀░';;
-.)char='
+░░▀░";;
+.)char="
 ░░░
 ░░░
-░▀░';;
-,)char='
+░▀░";;
+,)char="
 ░░░░
 ░░░░
-░▄▀░';;
-*)char='
+░▄▀░";;
+*)char="
 ░░
 ░░
-░░';;
+░░";;
 esac
 for line in $char ; do printf $line ; printf "\033[1B\033[${#line}D" ; done
 printf "\033[3A\033[${#line}C"
-done ; printf "\033[2B\r"
+done ; printf "\033[3B\r"
 }
 
 wait;
@@ -228,12 +231,14 @@ battery="battery:        $battery"
  locale="locale:         $locale"
 # --------------------
 
-for line in "$distro" "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu" "$ram" "$battery" "$locale" ; do
+printf "${clogo}$distro${clr}"
+for line in  "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu" "$ram" "$battery" "$locale" ; do
+    set $line
     #  check if empty by removing *:
     ckmpty=${line#*:}
    	    # from  https://github.com/dylanaraps/pure-sh-bible#conditional-expressions
    	    # honestly idk why it works
-    if [ ! -z "${ckmpty#${ckmpty%%[![:space:]]*}}" ]; then
-        printf "$line\n"
+    if [ ! -z "${2#${2%%[![:space:]]*}}" ]; then
+        printf "${c0}$1${clr}\t\t${c1}$2${clr}\n"
     fi
 done
