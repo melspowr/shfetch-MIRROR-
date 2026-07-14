@@ -14,52 +14,41 @@
 # --------------------
 distro=$(grep PRETTY_NAME /etc/os-release)
 	# remove from left(##) 		  ; remove from right(%%)
-    distro=${distro##"PRETTY_NAME='"} ; distro=${distro%%\'}
+	# keep one \", for parsing only the distro name to embtoilet
+    distro=${distro#PRETTY_NAME=}; distro=${distro%\"}
 host=$(cat /sys/devices/virtual/dmi/id/product_name)
 kernel=$(uname -r)
 uptime=$(uptime)
     uptime=${uptime%%","*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | tr ":" "h")
-# pkgs (sorry this is the most extense part)
+# pkgs and colors
     case "$distro" in
-       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)"
+       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ;;
+       # `apk stats` and `apk info` are so freaking slow. find, eventually, an alternative.
+       *Alpine*) pkgs="$(apk info | wc -l) (apk)" ;;
     esac
 shell=$SHELL
-disp=${WAYLAND_DISPLAY%%-0}
+disp=${WAYLAND_DISPLAY%%-*}
     # Check if its xorg
     if [ -z $disp ] && [ $DISPLAY = ":0" ]; then disp="xorg" ; fi ;
 term=$TERM
 cpu=$(uname -p)
-gpu=$(lspci)				     # delete  kB	     delete spaces and name
+				     # delete  kB	     delete spaces and name
 tram=$(grep MemTotal: /proc/meminfo) ; tram=${tram%\ *} ; tram=${tram##"MemTotal:"*\ }
 fram=$(grep MemAvailable:  /proc/meminfo) ; fram=${fram%\ *} ; fram=${fram##"MemAvailable:"*\ }
     tram=$(echo "scale=2 ;$tram/1024/1024" | bc -s)
     fram=$(echo "scale=2 ;$fram/1024/1024" | bc -s)     ; uram=$(echo "scale=2 ;$tram-$fram"     | bc -s)
     ram="$uram/$tram GiB"
     unset tram fram uram
-battery="$(cat /sys/class/power_supply/BAT0/capacity)%% [$(cat /sys/class/power_supply/BAT0/status)]"
-locale=$(locale | grep LANG)
-    locale=${locale##"LANG="}
-# --------------------
+
+[ -d "/sys/class/power_supply/BAT0" ] && battery="$(cat /sys/class/power_supply/BAT0/capacity)%% [$(cat /sys/class/power_supply/BAT0/status)]"
+locale=$LANG
 
 embtoilet() {
-    #!/bin/sh
-if [ $# -gt 0 ]; then
-   distro=$1
-else
-    read distro
-fi
-# caps support
-distro=$(printf "$distro" | tr 'A-Z' 'a-z')
-
-printf "\n\n\n"
-printf "\033[3A"
-while [ ${#distro} -ne 0 ] ; do
-# get the first character
-i=$(printf "%.1s" "$distro" )
-#echo $i ; exit 0
-#delete the char
-distro=${distro#${i}}
-    case $i in
+# no comments and stdin cutted for space efficiency
+# see https://codeberg.org/melspowr/embtoilet for full version
+distro=$1 ; distro=$(printf "$distro" | tr 'A-Z' 'a-z') ; printf "\n\n\n" ; printf "\033[3A"
+while [ ${#distro} -ne 0 ] ; do i=$(printf "%.1s" "$distro" ) ; distro=${distro#${i}}
+case $i in
 a)char='
 ░█▀█
 ░█▀█
@@ -216,30 +205,35 @@ z)char='
 ░░
 ░░
 ░░';;
-
-    esac
-    for line in $char; do
-        printf $line
-        printf "\033[1B\033[${#line}D"
-    done
-    # printf "\033[3A\033[4C"
-    printf "\033[3A\033[${#line}C"
-done
-printf "\033[2B\r"
+esac
+for line in $char ; do printf $line ; printf "\033[1B\033[${#line}D" ; done
+printf "\033[3A\033[${#line}C"
+done ; printf "\033[2B\r"
 }
 
-printf "$(embtoilet "$distro")
-host:		$host
-kernel:		$kernel
-uptime:		$uptime
-pkgs:		$pkgs
-shell:		$shell
-disp:		$disp
-term:		$term
-cpu:		$cpu
-ram:		$ram
-battery:	$battery
-locale:		$locale
-"
+wait;
+## table build
+## -----------
+ distro=$(embtoilet "${distro#*\"}")
+   host="host:           $host"
+ kernel="kernel:         $kernel"
+ uptime="uptime:         $uptime"
+   pkgs="pkgs:           $pkgs"
+  shell="shell:          $shell"
+   disp="disp:           $disp"
+   term="term:           $term"
+    cpu="cpu:            $cpu"
+    ram="ram:            $ram"
+battery="battery:        $battery"
+ locale="locale:         $locale"
+# --------------------
 
-
+for line in "$distro" "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu" "$ram" "$battery" "$locale" ; do
+    #  check if empty by removing *:
+    ckmpty=${line#*:}
+   	    # from  https://github.com/dylanaraps/pure-sh-bible#conditional-expressions
+   	    # honestly idk why it works
+    if [ ! -z "${ckmpty#${ckmpty%%[![:space:]]*}}" ]; then
+        printf "$line\n"
+    fi
+done
