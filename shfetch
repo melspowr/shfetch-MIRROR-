@@ -42,20 +42,24 @@ locale=$(locale | grep LANG)
 # --------------------
 
 embtoilet() {
-    if [ $# -gt 0 ]; then
-       distro=$1
-    else
-        read distro
-    fi
-    printf "\n\n\n"
-    printf "\033[3A"
-    while [ ${#distro} -ne 0 ] ; do
-    # get the first character
-    i=$(printf "%.1s" "$distro")
-    #delete the char
-    distro=${distro#${i}}
-    # lowercase
-    case $(printf "$i" | tr 'A-Z' 'a-z') in
+    #!/bin/sh
+if [ $# -gt 0 ]; then
+   distro=$1
+else
+    read distro
+fi
+# caps support
+distro=$(printf "$distro" | tr 'A-Z' 'a-z')
+
+printf "\n\n\n"
+printf "\033[3A"
+while [ ${#distro} -ne 0 ] ; do
+# get the first character
+i=$(printf "%.1s" "$distro" )
+#echo $i ; exit 0
+#delete the char
+distro=${distro#${i}}
+    case $i in
 a)char='
 ░█▀█
 ░█▀█
@@ -160,18 +164,68 @@ z)char='
 ░▀▀█
 ░▄▀░
 ░▀▀▀';;
+1)char='
+░▀█░
+░░█░
+░▀▀▀';;
+2)char='
+░▀▀▄
+░▄▀░
+░▀▀▀';;
+3)char='
+░▀▀█
+░░▀▄
+░▀▀░';;
+4)char='
+░█░█
+░░▀█
+░░░▀';;
+5)char='
+░█▀▀
+░▀▀▄
+░▀▀░';;
+6)char='
+░▄▀▀
+░█▀▄
+░░▀░';;
+7)char='
+░▀▀█
+░▄▀░
+░▀░░';;
+8)char='
+░▄▀▄
+░▄▀▄
+░░▀░';;
+9)char='
+░▄▀▄
+░░▀█
+░▀▀░';;
+0)char='
+░▄▀▄
+░█/█
+░░▀░';;
+.)char='
+░░░
+░░░
+░▀░';;
+,)char='
+░░░░
+░░░░
+░▄▀░';;
 *)char='
-░░░░
-░░░░
-░░░░';;
-        esac
-        for line in $char; do
-            printf $line
-            printf "\033[1B\033[4D"
-        done
-        printf "\033[3A\033[4C"
+░░
+░░
+░░';;
+
+    esac
+    for line in $char; do
+        printf $line
+        printf "\033[1B\033[${#line}D"
     done
-    printf "\033[2B\r"
+    # printf "\033[3A\033[4C"
+    printf "\033[3A\033[${#line}C"
+done
+printf "\033[2B\r"
 }
 
 printf "$(embtoilet "$distro")
