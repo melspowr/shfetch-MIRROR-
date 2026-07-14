@@ -12,11 +12,11 @@
 
 # table initialization
 # --------------------
-distro=$(grep PRETTY_NAME /etc/os-release)
+distro=$(grep ^PRETTY_NAME /etc/os-release)
 	# remove from left(##) 		  ; remove from right(%%)
 	# keep one \", for parsing only the distro name to embtoilet
     distro=${distro#PRETTY_NAME=}; distro=${distro%\"}
-host=$(cat /sys/devices/virtual/dmi/id/product_name)
+[ -e /sys/devices/virtual/dmi/id/product_name ] && host=$(cat /sys/devices/virtual/dmi/id/product_name)
 kernel=$(uname -r)
 uptime=$(uptime)
     uptime=${uptime%%","*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | tr ":" "h")
@@ -32,7 +32,7 @@ clogo="\033[10;36m"
 shell=$SHELL
 disp=${WAYLAND_DISPLAY%%-*}
     # Check if its xorg
-    if [ -z $disp ] && [ $DISPLAY = ":0" ]; then disp="xorg" ; fi ;
+    if [ -z "$disp" ] && [ "$DISPLAY" = ":0" ]; then disp="xorg" ; fi ;
 term=$TERM
 cpu=$(uname -p)
 				     # delete  kB	     delete spaces and name
