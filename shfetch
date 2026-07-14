@@ -1,3 +1,4 @@
+#!/bin/sh
 # ShiTTY FETCH & busybox and POSIX compliant
 # this file is licensed under the LGPLv2.
 # this file was not made by any AI
@@ -35,7 +36,7 @@ fram=$(grep MemAvailable:  /proc/meminfo) ; fram=${fram%\ *} ; fram=${fram##"Mem
     fram=$(echo "scale=2 ;$fram/1024/1024" | bc -s)     ; uram=$(echo "scale=2 ;$tram-$fram"     | bc -s)
     ram="$uram/$tram GiB"
     unset tram fram uram
-battery="$(cat /sys/class/power_supply/BAT0/capacity)%%"
+battery="$(cat /sys/class/power_supply/BAT0/capacity)%% [$(cat /sys/class/power_supply/BAT0/status)]"
 locale=$(locale | grep LANG)
     locale=${locale##"LANG="}
 # --------------------
