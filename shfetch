@@ -22,12 +22,11 @@ uptime=$(uptime)
     uptime=${uptime%%","*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | tr ":" "h")
 # pkgs and colors
     case "$distro" in
-       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ;;
+       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ; clogo="" ;;
        # `apk stats` and `apk info` are so freaking slow. find, eventually, an alternative.
-       *Alpine*) pkgs="$(apk info | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ;;
+       *Alpine*) pkgs="$(apk info | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ; clogo="" ;
     esac
 clr="\033[0m"
-clogo="\033[10;36m"
 
 shell=$SHELL
 disp=${WAYLAND_DISPLAY%%-*}
@@ -227,7 +226,7 @@ wait;
    term="term:           $term"
     cpu="cpu:            $cpu"
     ram="ram:            $ram"
-battery="battery:        $battery"
+battery="bat:            $battery"
  locale="locale:         $locale"
 # --------------------
 
@@ -237,6 +236,7 @@ for line in  "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu"
    	    # from  https://github.com/dylanaraps/pure-sh-bible#conditional-expressions
    	    # honestly idk why it works
     if [ ! -z "${2#${2%%[![:space:]]*}}" ]; then
-        printf "${c0}$1${clr}\t\t${c1}$2${clr}\n"
+        printf "${c0}$1${clr}" ; shift
+        printf "\t\t${c1}$*${clr}\n"
     fi
 done
