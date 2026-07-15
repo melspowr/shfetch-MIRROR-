@@ -10,8 +10,26 @@
 # dylanaraps for the pure-sh-bible
 # fastfetch for the logos
 
-#[JUMP TO ACTUAL FETCH PRINT](#SHPRINT)
+# * [JUMP TO ACTUAL FETCH PRINT](#SHPRINT)
+supercoolhelp(){
+printf "\
+ShiTTY FETCH, a very poopy fetch 💩
+usage: shfetch
 
+optional arguments
+-h	displays this help
+-d	enables debugging (prints everything even if empty)
+
+"
+exit 0
+}
+while [ $# -gt 0 ] ; do
+    case $1 in
+        -d | --debug) shift ; debug=1 ;;
+        -h | --help)  shift ; supercoolhelp ;;
+        *) shift ; printf "ermmmmm, idk what you're talking about,\nyour arguments are kinda strange.\n" ; exit 2 ;;
+    esac
+done
 
 # table initialization
 # --------------------
@@ -122,7 +140,7 @@ for line in  "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu"
     set $line
    	    # from  https://github.com/dylanaraps/pure-sh-bible#conditional-expressions
    	    # honestly idk why it works
-    if [ ! -z "${2#${2%%[![:space:]]*}}" ]; then
+    if [ ! -z "${2#${2%%[![:space:]]*}}" ] || [ $debug ]; then
         printf "${c0}$1${clr}" ; shift
         printf "\t\t${c1}$*${clr}\n"
     fi
