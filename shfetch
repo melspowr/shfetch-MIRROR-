@@ -44,8 +44,8 @@ uptime=$(uptime)
 # pkgs and colors
     case "$distro" in
        *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ; clogo="" ;;
-       # `apk stats` and `apk info` are so freaking slow. find, eventually, an alternative.
-       *Alpine*) pkgs="$(apk info | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ; clogo="" ;
+       # comment: gnu `grep` is much faster than busybox `grep`
+       *Alpine*) pkgs="$(grep ^C:Q /lib/apk/db/installed | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ; clogo="" ;
     esac
 clr="\033[0m"
 
