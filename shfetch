@@ -11,32 +11,42 @@
 # fastfetch for the logos
 
 # * [JUMP TO ACTUAL FETCH PRINT](#SHPRINT)
+
 supercoolhelp(){
-printf "\
+printf "%s" "\
 ShiTTY FETCH, a very poopy fetch 💩
 usage: shfetch
 
 optional arguments
--h	displays this help
--d	enables debugging (prints everything even if empty)
+-h --help		displays this help.
+-d	 		enables debugging (prints everything even if empty).
+-t --toilet		uses \`toilet -f pagga\` to print the distribution name (can't be spaced).
+-C --right [num] 	spaces the table to the right a given number of spaces.
+-s --sep [num] 		sets the separation between data:______value
 
 "
 exit 0
 }
 while [ $# -gt 0 ] ; do
     case $1 in
-        -d | --debug) shift ; debug=1 ;;
-        -h | --help)  shift ; supercoolhelp ;;
-        *) shift ; printf "ermmmmm, idk what you're talking about,\nyour arguments are kinda strange.\n" ; exit 2 ;;
+        -d | --debug) debug=1 ; shift ;;
+        -h | --h*)  supercoolhelp ;;
+        -t | --toilet) toilet=1 ; shift ;;
+        -C | --right) space=${2} ; shift 2 ;;
+        -s | --sep*) separ=${2} ; shift 2 ;;
+        *) printf "ermmmmm, idk what you're talking about,\nyour arguments are kinda strange.\n" ; shift ; exit 2 ;;
     esac
+    shift
 done
+space=${space:-1}
+separ=${separ:-16}
 
 # table initialization
 # --------------------
 distro=$(grep ^PRETTY_NAME /etc/os-release)
 	# remove from left(##) 		  ; remove from right(%%)
 	# keep one \", for parsing only the distro name to embtoilet
-    distro=${distro#PRETTY_NAME=}; distro=${distro%\"}
+    distro=${distro#PRETTY_NAME=}; distro=${distro%\'}
 [ -e /sys/devices/virtual/dmi/id/product_name ] && host=$(cat /sys/devices/virtual/dmi/id/product_name)
 kernel=$(uname -r)
 uptime=$(uptime)
@@ -61,15 +71,14 @@ fram=$(grep ^MemAvailable:  /proc/meminfo) ; fram=${fram%\ *} ; fram=${fram##"Me
     tram=$(echo "scale=2 ;$tram/1024/1024" | bc -s)
     fram=$(echo "scale=2 ;$fram/1024/1024" | bc -s)     ; uram=$(echo "scale=2 ;$tram-$fram" | bc -s)
     ram="$uram/${tram}GiB"
-    unset tram fram uram
-
+    unset tram fram uramright
 [ -d "/sys/class/power_supply/BAT0" ] && battery="$(cat /sys/class/power_supply/BAT0/capacity)%% [$(cat /sys/class/power_supply/BAT0/status)]"
 locale=$LANG
 
 embtoilet() {
 # no comments, new lines and stdin cutted for space efficiency
 # see https://codeberg.org/melspowr/embtoilet for full version
-distro=$1 ; distro=$(printf "$distro" | tr 'A-Z' 'a-z') ; printf "\n\n\n" ; printf "\033[3A"
+distro=$1; distro=$(printf "$distro" | tr 'A-Z' 'a-z') ; printf "\n\n\n" ; printf "\033[3A\033[${space}C"
 while [ ${#distro} -ne 0 ] ; do i=$(printf "%.1s" "$distro" ) ; distro=${distro#${i}}
 case $i in
 a)char="░█▀█ ░█▀█ ░▀░▀";;
@@ -117,11 +126,19 @@ printf "\033[3A\033[${#line}C"
 done ; printf "\033[3B\r"
 }
 
+space(){
+spc=$space
+while [ $spc -gt 0 ]; do
+    printf " " ; spc=$(($spc-1))
+done
+}
+
 
 #SHPRINT
 ## table build
 ## -----------
- distro=$(embtoilet "${distro#*\"}")
+[ -z "$toilet" ]   && distro=$(embtoilet "${distro#*\'}")
+[ ! -z "$toilet" ] && distro="$(toilet -f pagga "${distro#*\'}")\n"
    host="host:           $host"
  kernel="kernel:         $kernel"
  uptime="uptime:         $uptime"
@@ -131,7 +148,7 @@ done ; printf "\033[3B\r"
    term="term:           $term"
     cpu="cpu:            $cpu"
     ram="ram:            $ram"
-battery="bat:            $battery"
+battery="battery:            $battery"
  locale="locale:         $locale"
 # --------------------
 
@@ -141,7 +158,8 @@ for line in  "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu"
    	    # from  https://github.com/dylanaraps/pure-sh-bible#conditional-expressions
    	    # honestly idk why it works
     if [ ! -z "${2#${2%%[![:space:]]*}}" ] || [ $debug ]; then
-        printf "${c0}$1${clr}" ; shift
-        printf "\t\t${c1}$*${clr}\n"
+        space
+        printf "${c0}$1${clr}\033[${#1}D" ; shift
+        printf "\033[${separ}C${c1}$*${clr}\n"
     fi
 done
