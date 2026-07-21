@@ -64,7 +64,7 @@ disp=${WAYLAND_DISPLAY%%-*}
     # Check if its xorg
     if [ -z "$disp" ] && [ "$DISPLAY" = ":0" ]; then disp="xorg" ; fi ;
 term=$TERM
-cpu=$(uname -p)
+cpu="$(grep -m 1 '^model name' /proc/cpuinfo )" ; cpu=${cpu#*:}; [ -z "$cpu" ] && cpu="$(arch)"
 				     # delete  kB	     delete spaces and name
 tram=$(grep ^MemTotal: /proc/meminfo) ; tram=${tram%\ *} ; tram=${tram##"MemTotal:"*\ }
 fram=$(grep ^MemAvailable:  /proc/meminfo) ; fram=${fram%\ *} ; fram=${fram##"MemAvailable:"*\ }
