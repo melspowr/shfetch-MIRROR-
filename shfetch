@@ -50,7 +50,7 @@ distro=$(grep ^PRETTY_NAME /etc/os-release)
 [ -e /sys/devices/virtual/dmi/id/product_name ] && host=$(cat /sys/devices/virtual/dmi/id/product_name)
 kernel=$(uname -r)
 uptime=$(uptime)
-    uptime=${uptime%%","*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | tr ":" "h")
+    uptime=${uptime%%user*} ; uptime=${uptime%,*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | sed  's/:/h/')
 # pkgs and colors
     case "$distro" in
        *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ; clogo="" ;;
