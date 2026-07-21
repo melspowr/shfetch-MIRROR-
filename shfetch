@@ -8,7 +8,7 @@
 
 # thanks to:
 # dylanaraps for the pure-sh-bible
-# fastfetch for the logos
+# neofetch for the logos
 
 # * [JUMP TO ACTUAL FETCH PRINT](#SHPRINT)
 
@@ -19,6 +19,7 @@ usage: shfetch
 
 optional arguments
 -h --help		displays this help.
+-V --variables		displays help for variables in the script.
 -d	 		enables debugging (prints everything even if empty).
 -t --toilet		uses \`toilet -f pagga\` to print the distribution name (can't be spaced).
 -C --right [num] 	spaces the table to the right a given number of spaces.
@@ -27,11 +28,16 @@ optional arguments
 "
 exit 0
 }
+# variablehelp(){
+# printf "%s" "\
+# you can overwrite
+# "
+
 while [ $# -gt 0 ] ; do
     case $1 in
-        -d | --debug) debug=1 ; shift ;;
         -h | --h*)  supercoolhelp ;;
-        -t | --toilet) toilet=1 ; shift ;;
+        -V | --var*) variablehelp ;;
+        -d | --debug) debug=1 ; shift ;;
         -C | --right) space=${2} ; shift 2 ;;
         -s | --sep*) separ=${2} ; shift 2 ;;
         *) printf "ermmmmm, idk what you're talking about,\nyour arguments are kinda strange.\n" ; shift ; exit 2 ;;
@@ -40,7 +46,7 @@ done
 space=${space:-1}
 separ=${separ:-16}
 
-# table initialization
+# values initialization
 # --------------------
 distro=$(grep ^PRETTY_NAME /etc/os-release)
 	# remove from left(##) 		  ; remove from right(%%)
@@ -52,9 +58,9 @@ uptime=$(uptime)
     uptime=${uptime%%user*} ; uptime=${uptime%,*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | sed  's/:/h/')
 # pkgs and colors
     case "$distro" in
-       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ; clogo="" ;;
+       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ; c3="\033[35;1m" ; c4="\033[37;1m" ;;
        # comment: gnu `grep` is much faster than busybox `grep`
-       *Alpine*) pkgs="$(grep ^C:Q /lib/apk/db/installed | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ; clogo="" ;
+       *Alpine*) pkgs="$(grep ^C:Q /lib/apk/db/installed | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ;;
     esac
 clr="\033[0m"
 
@@ -73,6 +79,8 @@ fram=$(grep ^MemAvailable:  /proc/meminfo) ; fram=${fram%\ *} ; fram=${fram##"Me
     unset tram fram uramright
 [ -d "/sys/class/power_supply/BAT0" ] && battery="$(cat /sys/class/power_supply/BAT0/capacity)%% [$(cat /sys/class/power_supply/BAT0/status)]"
 locale=$LANG
+# --------------------
+
 
 embtoilet() {
 # no comments, new lines and stdin cutted for space efficiency
@@ -125,19 +133,34 @@ printf "\033[3A\033[${#line}C"
 done ; printf "\033[3B\r"
 }
 
-space(){
-spc=$space
-while [ $spc -gt 0 ]; do
-    printf " " ; spc=$(($spc-1))
-done
-}
-
+case "$distro" in 
+        *Gentoo*) logo="\
+${c3}         -/oyddmdhs+:.
+     -o${c4}dNMMMMMMMMNNmhy+${c3}-\`
+   -y${c4}NMMMMMMMMMMMNNNmmdhy${c3}+-
+ \`o${c4}mMMMMMMMMMMMMNmdmmmmddhhy${c3}/\`
+ om${c4}MMMMMMMMMMMN${c3}hhyyyo${c4}hmdddhhhd${c3}o\`
+.y${c4}dMMMMMMMMMMd${c3}hs++so/s${c4}mdddhhhhdm${c3}+\`
+ oy${c4}hdmNMMMMMMMN${c3}dyooy${c4}dmddddhhhhyhN${c3}d.
+  :o${c4}yhhdNNMMMMMMMNNNmmdddhhhhhyym${c3}Mh
+    .:${c4}+sydNMMMMMNNNmmmdddhhhhhhmM${c3}my
+       /m${c4}MMMMMMNNNmmmdddhhhhhmMNh${c3}s:
+    \`o${c4}NMMMMMMMNNNmmmddddhhdmMNhs${c3}+\`
+  \`s${c4}NMMMMMMMMNNNmmmdddddmNMmhs${c3}/.
+ /N${c4}MMMMMMMMNNNNmmmdddmNMNdso${c3}:\`
++M${c4}MMMMMMNNNNNmmmmdmNMNdso${c3}/-
+yM${c4}MNNNNNNNmmmmmNNMmhs+/${c3}-\`
+/h${c4}MMNNNNNNNNMNdhs++/${c3}-\`
+\`/${c4}ohdmmddhys+++/:${c3}.\`
+  \`-//////:--.
+" ;;
+esac
+lheight=$(printf "$logo" | wc -l)
 
 #SHPRINT
 ## table build
 ## -----------
-[ -z "$toilet" ]   && distro=$(embtoilet "${distro#*\'}")
-[ ! -z "$toilet" ] && distro="$(toilet -f pagga "${distro#*\'}")\n"
+ toilet="$(embtoilet "${distro#*\'}")"
    host="host:           $host"
  kernel="kernel:         $kernel"
  uptime="uptime:         $uptime"
@@ -147,18 +170,23 @@ done
    term="term:           $term"
     cpu="cpu:            $cpu"
     ram="ram:            $ram"
-battery="battery:            $battery"
+battery="battery:        $battery"
  locale="locale:         $locale"
 # --------------------
 
-printf "${clogo}$distro${clr}"
+# print the logo and bring the cursor back
+printf "$logo${clr}\033[${lheight}A"
+# print the toilet text
+printf "${clogo}$toilet${clr}"
+theight=0
 for line in  "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu" "$ram" "$battery" "$locale" ; do
+    theight=$(($theight+1))
     set $line
    	    # from  https://github.com/dylanaraps/pure-sh-bible#conditional-expressions
    	    # honestly idk why it works
     if [ ! -z "${2#${2%%[![:space:]]*}}" ] || [ $debug ]; then
-        space
-        printf "${c0}$1${clr}\033[${#1}D" ; shift
+        printf "\033[${space}C${c0}$1${clr}\033[${#1}D" ; shift
         printf "\033[${separ}C${c1}$*${clr}\n"
     fi
 done
+printf "\033[$(($lheight - $theight - 3))B"
