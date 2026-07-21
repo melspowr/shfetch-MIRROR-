@@ -36,7 +36,6 @@ while [ $# -gt 0 ] ; do
         -s | --sep*) separ=${2} ; shift 2 ;;
         *) printf "ermmmmm, idk what you're talking about,\nyour arguments are kinda strange.\n" ; shift ; exit 2 ;;
     esac
-    shift
 done
 space=${space:-1}
 separ=${separ:-16}
