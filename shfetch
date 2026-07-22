@@ -28,10 +28,23 @@ optional arguments
 "
 exit 0
 }
-# variablehelp(){
-# printf "%s" "\
-# you can overwrite
-# "
+variablehelp(){
+printf "%s" "\
+colors and others are overwritten if you define them in your enviroment.
+
+c0= 			table _name:_ color
+c1= 			table _value_ color
+c2= 			embtoilet color
+c3=	 		distribution logo color
+c[4-undef]=	 	distribution logo color
+separ= separation length between name:______value
+space= space from the 1st wall (tweak it to undesrtand it)
+
+example:
+c1=\"\\033[10;34m\" space=42 separ=13 shfetch
+"
+exit 0
+}
 
 while [ $# -gt 0 ] ; do
     case $1 in
@@ -43,7 +56,6 @@ while [ $# -gt 0 ] ; do
         *) printf "ermmmmm, idk what you're talking about,\nyour arguments are kinda strange.\n" ; shift ; exit 2 ;;
     esac
 done
-space=${space:-1}
 separ=${separ:-16}
 
 # values initialization
@@ -58,9 +70,12 @@ uptime=$(uptime)
     uptime=${uptime%%user*} ; uptime=${uptime%,*} ; uptime=${uptime##*"up "} ; uptime=$(echo $uptime | sed  's/:/h/')
 # pkgs and colors
     case "$distro" in
-       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; c0="\033[10;35m" ; c1="\033[10;95m" ; c3="\033[35;1m" ; c4="\033[37;1m" ;;
+       *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; space=${space:-37}
+       c0=${c0:-"\033[10;35m"} ; c1=${c1:-"\033[10;95m"} ; c2=${c2:-"\033[10;34m"}
+       c3=${c3:-"\033[35;1m"} ; c4=${c4:-"\033[37;1m"} ;;
        # comment: gnu `grep` is much faster than busybox `grep`
-       *Alpine*) pkgs="$(grep ^C:Q /lib/apk/db/installed | wc -l) (apk)" ;  c0="\033[2;34m" ; c1="\033[2;36m" ;;
+       *Alpine*) pkgs="$(grep ^C:Q /lib/apk/db/installed | wc -l) (apk)" ;
+       c0=${c0:-"\033[2;34m"} ; c1=${c1:-"\033[2;36m"} ;;
     esac
 clr="\033[0m"
 
@@ -177,7 +192,7 @@ battery="battery:        $battery"
 # print the logo and bring the cursor back
 printf "$logo${clr}\033[${lheight}A"
 # print the toilet text
-printf "${clogo}$toilet${clr}"
+printf "${c2}$toilet${clr}"
 theight=0
 for line in  "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu" "$ram" "$battery" "$locale" ; do
     theight=$(($theight+1))
