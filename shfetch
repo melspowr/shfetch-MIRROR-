@@ -19,8 +19,9 @@ usage: shfetch
 
 optional arguments
 -h --help		displays this help.
+-d --distro		overwrites distribution name
 -V --variables		displays help for variables in the script.
--d	 		enables debugging (prints everything even if empty).
+--debug	 		enables debugging (prints everything even if empty).
 -t --toilet		uses \`toilet -f pagga\` to print the distribution name (can't be spaced).
 -C --right [num] 	spaces the table to the right a given number of spaces.
 -s --sep [num] 		sets the separation between data:______value
@@ -49,8 +50,9 @@ exit 0
 while [ $# -gt 0 ] ; do
     case $1 in
         -h | --h*)  supercoolhelp ;;
+        -d | --distro) distro=$2 ; shift 2;;
         -V | --var*) variablehelp ;;
-        -d | --debug) debug=1 ; shift ;;
+        --debug) debug=1 ; shift ;;
         -C | --right) space=${2} ; shift 2 ;;
         -s | --sep*) separ=${2} ; shift 2 ;;
         *) printf "ermmmmm, idk what you're talking about,\nyour arguments are kinda strange.\n" ; shift ; exit 2 ;;
@@ -60,10 +62,12 @@ separ=${separ:-16}
 
 # values initialization
 # --------------------
+if [ -z "$distro" ] ; then
 distro=$(grep ^PRETTY_NAME /etc/os-release)
 	# remove from left(##) 		  ; remove from right(%%)
 	# keep one \", for parsing only the distro name to embtoilet
     distro=${distro#PRETTY_NAME=}; distro=${distro%\'}
+fi
 [ -e /sys/devices/virtual/dmi/id/product_name ] && host=$(cat /sys/devices/virtual/dmi/id/product_name)
 kernel=$(uname -r)
 uptime=$(uptime)
@@ -71,11 +75,12 @@ uptime=$(uptime)
 # pkgs and colors
     case "$distro" in
        *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; space=${space:-37}
-       c0=${c0:-"\033[10;35m"} ; c1=${c1:-"\033[10;95m"} ; c2=${c2:-"\033[10;34m"}
+       c0=${c0:-"\033[10;35m"} ; c1=${c1:-"\033[10;95m"} ; c2=${c2:-"\033[10;37m"}
        c3=${c3:-"\033[35;1m"} ; c4=${c4:-"\033[37;1m"} ;;
        # comment: gnu `grep` is much faster than busybox `grep`
-       *Alpine*) pkgs="$(grep ^C:Q /lib/apk/db/installed | wc -l) (apk)" ;
-       c0=${c0:-"\033[2;34m"} ; c1=${c1:-"\033[2;36m"} ;;
+       *Alpine*) pkgs="$(grep ^C:Q /lib/apk/db/installed | wc -l) (apk)" ; space=${space:-42} ;
+       c0=${c0:-"\033[2;34m"} ; c1=${c1:-"\033[2;36m"} ; c3=${c3:-"\033[10;36m"} ;;
+       *) pkgs="9999 (not found)" ; space=${space:-32} ;;
     esac
 clr="\033[0m"
 
@@ -149,7 +154,7 @@ done ; printf "\033[3B\r"
 }
 
 case "$distro" in 
-        *Gentoo*) logo="\
+*Gentoo*)logo="\
 ${c3}         -/oyddmdhs+:.
      -o${c4}dNMMMMMMMMNNmhy+${c3}-\`
    -y${c4}NMMMMMMMMMMMNNNmmdhy${c3}+-
@@ -168,7 +173,49 @@ yM${c4}MNNNNNNNmmmmmNNMmhs+/${c3}-\`
 /h${c4}MMNNNNNNNNMNdhs++/${c3}-\`
 \`/${c4}ohdmmddhys+++/:${c3}.\`
   \`-//////:--.
-" ;;
+";;
+*Alpine*)logo="\
+${c3}       .hddddddddddddddddddddddh.
+      :dddddddddddddddddddddddddd:
+     /dddddddddddddddddddddddddddd/
+    +dddddddddddddddddddddddddddddd+
+  \`sdddddddddddddddddddddddddddddddds\`
+ \`ydddddddddddd++hdddddddddddddddddddy\`
+.hddddddddddd+\`  \`+ddddh:-sdddddddddddh.
+hdddddddddd+\`      \`+y:    .sddddddddddh
+ddddddddh+\`   \`//\`   \`.\`     -sddddddddd
+ddddddh+\`   \`/hddh/\`   \`:s-    -sddddddd
+ddddh+\`   \`/+/dddddh/\`   \`+s-    -sddddd
+ddd+\`   \`/o\` :dddddddh/\`   \`oy-    .yddd
+hdddyo+ohddyosdddddddddho+oydddy++ohdddh
+.hddddddddddddddddddddddddddddddddddddh.
+ \`yddddddddddddddddddddddddddddddddddy\`
+  \`sdddddddddddddddddddddddddddddddds\`
+    +dddddddddddddddddddddddddddddd+
+     /dddddddddddddddddddddddddddd/
+      :dddddddddddddddddddddddddd:
+       .hddddddddddddddddddddddh.
+";;
+
+
+# from https://www.twitchquotes.com/copypastas/689
+*)logo="\
+░░░░░▄▄▄▄▀▀▀▀▀▀▀▀▄▄▄▄▄▄░░░░░░░
+░░░░░█░░░░▒▒▒▒▒▒▒▒▒▒▒▒░░▀▀▄░░░░
+░░░░█░░░▒▒▒▒▒▒░░░░░░░░▒▒▒░░█░░░
+░░░█░░░░░░▄██▀▄▄░░░░░▄▄▄░░░░█░░
+░▄▀▒▄▄▄▒░█▀▀▀▀▄▄█░░░██▄▄█░░░░█░
+█░▒█▒▄░▀▄▄▄▀░░░░░░░░█░░░▒▒▒▒▒░█
+█░▒█░█▀▄▄░░░░░█▀░░░░▀▄░░▄▀▀▀▄▒█
+░█░▀▄░█▄░█▀▄▄░▀░▀▀░▄▄▀░░░░█░░█░
+░░█░░░▀▄▀█▄▄░█▀▀▀▄▄▄▄▀▀█▀██░█░░
+░░░█░░░░██░░▀█▄▄▄█▄▄█▄████░█░░░
+░░░░█░░░░▀▀▄░█░░░█░█▀██████░█░░
+░░░░░▀▄░░░░░▀▀▄▄▄█▄█▄█▄█▄▀░░█░░
+░░░░░░░▀▄▄░▒▒▒▒░░░░░░░░░░▒░░░█░
+░░░░░░░░░░▀▀▄▄░▒▒▒▒▒▒▒▒▒▒░░░░█░
+░░░░░░░░░░░░░░▀▄▄▄▄▄░░░░░░░░█░░
+"; space=${space:-32};;
 esac
 lheight=$(printf "$logo" | wc -l)
 
