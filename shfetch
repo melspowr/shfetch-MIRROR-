@@ -242,11 +242,11 @@ printf "$logo${clr}\033[${lheight}A"
 printf "${c2}$toilet${clr}"
 theight=0
 for line in  "$host" "$kernel" "$uptime" "$pkgs" "$shell" "$disp" "$term" "$cpu" "$ram" "$battery" "$locale" ; do
-    theight=$(($theight+1))
     set $line
    	    # from  https://github.com/dylanaraps/pure-sh-bible#conditional-expressions
    	    # honestly idk why it works
     if [ ! -z "${2#${2%%[![:space:]]*}}" ] || [ $debug ]; then
+        theight=$(($theight+1))
         printf "\033[${space}C${c0}$1${clr}\033[${#1}D" ; shift
         printf "\033[${separ}C${c1}$*${clr}\n"
     fi
