@@ -38,6 +38,7 @@ c1= 			table _value_ color
 c2= 			embtoilet color
 c3=	 		distribution logo color
 c[4-undef]=	 	distribution logo color
+NO_COLOR=1 		disables colors
 separ= separation length between name:______value
 space= space from the 1st wall (tweak it to undesrtand it)
 
@@ -62,6 +63,8 @@ separ=${separ:-16}
 
 # values initialization
 # --------------------
+
+
 if [ -z "$distro" ] ; then
 distro=$(grep ^PRETTY_NAME /etc/os-release)
 	# remove from left(##) 		  ; remove from right(%%)
@@ -83,6 +86,16 @@ uptime=$(uptime)
        *) pkgs="9999 (not found)" ; space=${space:-32} ;;
     esac
 clr="\033[0m"
+# https://no-color.org/
+if [ -n "$NO_COLOR" ] ; then
+    c0=""
+    c1=""
+    c2=""
+    c3=""
+    c4=""
+    c5=""
+fi
+
 
 shell=$SHELL
 disp=${WAYLAND_DISPLAY%%-*}
