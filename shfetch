@@ -78,11 +78,13 @@ uptime=$(uptime)
 # pkgs and colors
     case "$distro" in
        *Gentoo*) pkgs="$(qlist -I | wc -l) (emerge)" ; space=${space:-37}
-       c0=${c0:-"\033[10;35m"} ; c1=${c1:-"\033[10;95m"} ; c2=${c2:-"\033[10;37m"}
+       c0=${c0:-"\033[1;35m"} ; c1=${c1:-"\033[10;95m"} ; c2=${c2:-"\033[10;37m"}
        c3=${c3:-"\033[35;1m"} ; c4=${c4:-"\033[37;1m"} ;;
        # comment: gnu `grep` is much faster than busybox `grep`
        *Alpine*) pkgs="$(grep -c ^C:Q /lib/apk/db/installed) (apk)" ; space=${space:-42} ;
        c0=${c0:-"\033[2;34m"} ; c1=${c1:-"\033[2;36m"} ; c3=${c3:-"\033[10;36m"} ;;
+       *Arch*) pkgs="$(pacman -Qq --color never| wc -l) (pacman)"; space=${space:-36}
+       c0=${c0:-"\033[1;36m"} ; c3="\033[38;2;23;147;209m";;
        *) pkgs="9999 (not found)" ; space=${space:-32} ;;
     esac
 clr="\033[0m"
@@ -210,7 +212,27 @@ hdddyo+ohddyosdddddddddho+oydddy++ohdddh
       :dddddddddddddddddddddddddd:
        .hddddddddddddddddddddddh.
 ";;
-
+# by Cyllos from https://wiki.archlinux.org/title/ASCII_art
+*Arch*)logo="${c3}
+                  ▟█▙
+                 ▟███▙
+                ▟█████▙
+               ▟███████▙
+              ▂▔▀▜██████▙
+             ▟██▅▂▝▜█████▙
+            ▟█████████████▙
+           ▟███████████████▙
+          ▟█████████████████▙
+         ▟███████████████████▙
+        ▟█████████▛▀▀▜████████▙
+       ▟████████▛      ▜███████▙
+      ▟█████████        ████████▙
+     ▟██████████        █████▆▅▄▃▂
+    ▟██████████▛        ▜█████████▙
+   ▟██████▀▀▀              ▀▀██████▙
+  ▟███▀▘                       ▝▀███▙
+ ▟▛▀                               ▀▜▙
+";;
 
 # from https://www.twitchquotes.com/copypastas/689
 *)logo="\
